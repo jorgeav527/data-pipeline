@@ -2,3 +2,4 @@ apache-airflow-providers-http
 apache-airflow-providers-mongo
 pandas
 requests
+pytest
