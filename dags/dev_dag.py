@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from airflow.models import DAG
 from airflow.providers.http.sensors.http import HttpSensor
 from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 from airflow.operators.email import EmailOperator
@@ -38,7 +39,7 @@ with DAG(
     default_args=default_args,
     dag_id="ETL_develoment_v11",
     start_date=datetime(2023, 4, 1),
-    schedule_interval="@daily",  # will be "@daily"
+    schedule="@daily",  # will be "@daily"
     catchup=True,
     tags=["rd_studio_api"],
     template_searchpath="bucket",
@@ -77,11 +78,10 @@ with DAG(
         },
     )
 
-    # Define the PythonOperator to create contacts SQL table
-    create_contacts_sql_table = PostgresOperator(
+    create_contacts_sql_table = SQLExecuteQueryOperator(
         task_id="create_contacts_sql_table",
-        postgres_conn_id="Postgres_ID",
         sql=_create_contacts_sql_table,
+        conn_id="Postgres_ID",
     )
 
     # Create a PythonOperator to create a sql file
@@ -128,7 +128,8 @@ with DAG(
         python_callable=_fetch_mongo_api_to_json,
         op_kwargs={
             "extracted_path": "bucket/extracted_data/mongodb_api_users_{{ds}}.json",
-            "users_url": "http://192.168.0.13:3000/api/user/allusers?start_day=2022-07-27&end_day=2022-07-28{{data_interval_start}}",
+            "users_url": "http://192.168.0.13:3000/api/user/allusers?start_day=2022-07-27&end_day=2022-07-28",
+            # "users_url": "http://192.168.0.13:3000/api/user/allusers?start_day={{data_interval_start.year}}-{{data_interval_start.month}}-{{data_interval_start.day}}&end_day={{data_interval_end.year}}-{{data_interval_end.month}}-{{data_interval_end.day}}",
         },
     )
 
@@ -142,11 +143,10 @@ with DAG(
         },
     )
 
-    # Define the PythonOperator to create users SQL table
-    create_users_sql_table = PostgresOperator(
+    create_users_sql_table = SQLExecuteQueryOperator(
         task_id="create_users_sql_table",
-        postgres_conn_id="Postgres_ID",
         sql=_create_users_sql_table,
+        conn_id="Postgres_ID",
     )
 
     # Create a PythonOperator to create a sql file

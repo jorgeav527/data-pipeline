@@ -1,17 +1,21 @@
-"""Test the validity of all DAGs"""
-
+import pytest
 from airflow.models import DagBag
+from airflow.utils.dag_cycle_tester import check_cycle
 
 
-def test_dagbag():
-    """Validate DAG files using Airflow's models DagBag.
-    - Check if the tasks have required arguments.
-    - Check if DAG ids are unique.
-    - Check if DAG have no rounded cycles.
-    """
-    dag_bag = DagBag(include_examples=False)
-    assert not dag_bag.import_errors
+@pytest.fixture(scope="module")
+def dagbag():
+    return DagBag()
 
-    for dag_id, dag in dag_bag.dags.items():
-        error_msg = f"{dag_id} in {dag.full_filepath} has no tags"
-        assert dag.tags, error_msg
+
+def test_dag_integrity(dagbag):
+    assert (
+        len(dagbag.import_errors) == 0
+    ), f"DAG import failures: {dagbag.import_errors}"
+    for dag_id, dag in dagbag.dags.items():
+        assert dag is not None
+        assert dag.dag_id == dag_id
+        assert len(dag.tasks) > 0
+        assert check_cycle(dag) is None, f"{dag_id} has a cycle"
+        # errors = dag.test()
+        # assert len(errors) == 0  # check that there are no errors in the DAG definition

@@ -30,8 +30,8 @@ def _fetch_mongo_api_to_json(users_url, extracted_path, **kwargs):
 
     # Url API for the CRM users_url
     # users_url = f"http://192.168.0.13:3000/api/user/allusers?start_day={year_start}-{month_start}-{day_start}&end_day={year_end}-{month_end}-{day_end}"
-    users_url = f"http://192.168.0.13:3000/api/user/allusers?start_day=2022-07-27&end_day=2022-07-28"
-    # users_url = f"http://192.168.0.13:3000/api/user/allusers"
+    # users_url = f"http://192.168.0.13:3000/api/user/allusers?start_day=2022-07-27&end_day=2022-07-28"
+
     all_items = []
 
     # Send the GET request to the API with the headers
