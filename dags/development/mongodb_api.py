@@ -4,6 +4,7 @@ from datetime import datetime
 
 from glom import glom, Coalesce
 import pandas as pd
+import boto3
 
 
 # Set the API endpoint and token
@@ -181,3 +182,23 @@ def _transform_users_to_csv(extracted_path, transformed_path, **kwargs):
     df.to_csv(transformed_path, index=False)
 
     print(f"CSV file created successfully ({ds}).")
+
+
+# Define the function to fetch data from the API and save it to a file
+def _check_the_bucket_connection(
+    aws_access_key_id, aws_secret_access_key, endpoint_url, **kwargs
+):
+    # Getting the context of the task
+    ds = kwargs["ds"]
+    linode_obj_config = {
+        "aws_access_key_id": aws_access_key_id,
+        "aws_secret_access_key": aws_secret_access_key,
+        "endpoint_url": endpoint_url,
+    }
+
+    client = boto3.client("s3", **linode_obj_config)
+    response = client.list_buckets()
+    for bucket in response["Buckets"]:
+        print(bucket["Name"])
+
+    print(f"Connection successfully ({ds}).")
