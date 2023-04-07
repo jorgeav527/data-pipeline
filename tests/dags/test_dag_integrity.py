@@ -9,6 +9,15 @@ def dagbag():
 
 
 def test_dag_integrity(dagbag):
+    """
+    Check that all of the DAGs are in good health.
+
+    It tests the following:
+    - input: dagbag from airflow.models.
+    - output: assert if no imported errors exist within the tasks.
+    - output: assert the dag id name, the existence of tasks, or if the dag is not None in each dag.
+    - output: assert in each dag if no cycle infinite forloop exists.
+    """
     assert (
         len(dagbag.import_errors) == 0
     ), f"DAG import failures: {dagbag.import_errors}"
