@@ -1,10 +1,10 @@
 import json
 import requests
 from datetime import datetime
+import os
 
 from glom import glom, Coalesce
 import pandas as pd
-import boto3
 
 
 # Set the API endpoint and token
@@ -13,7 +13,7 @@ token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjNjODY1ZjM1M2
 
 
 # Define the function to fetch data from the API and save it to a file
-def _fetch_mongo_api_to_json(users_url, extracted_path, **kwargs):
+def _fetch_mongo_api_to_json(users_url, extracted_path, client, **kwargs):
     # Getting the context of the task
     ds = kwargs["ds"]
     year_start, month_start, day_start, hour_start, *_start = kwargs[
@@ -47,21 +47,34 @@ def _fetch_mongo_api_to_json(users_url, extracted_path, **kwargs):
         # Write the list of dictionaries to a JSON file
         json.dump(all_items, _file)
 
+    client.upload_file(
+        Filename=extracted_path,
+        Bucket="roadr-data-lake",
+        Key=f"extracted_data/mongodb_api/users/{ds}.json",
+        ExtraArgs={"ACL": "public-read"},
+    )
+
+    # Delete the local file
+    os.remove(extracted_path)
+
     print(f"JSON file created successfully ({ds}).")
 
 
 # Define the function to read the JSON file and transform it into a Pandas DataFrame
-def _transform_users_to_csv(extracted_path, transformed_path, **kwargs):
+def _transform_users_to_csv(client, transformed_path, **kwargs):
     # Getting the context of the task
     ds = kwargs["ds"]
 
-    print(f"extracted_path: {extracted_path}")
     print(f"transformed_path: {transformed_path}")
 
     # Read the JSON file into a Pandas DataFrame
     # load data using Python JSON module
-    with open(extracted_path, "r") as _file:
-        data = json.loads(_file.read())
+    url = f"https://roadr-data-lake.us-southeast-1.linodeobjects.com/extracted_data/mongodb_api/users/{ds}.json"
+    data = pd.read_json(
+        url,
+        orient="records",
+        typ="series",
+    )
 
     expr = [
         {
@@ -181,24 +194,14 @@ def _transform_users_to_csv(extracted_path, transformed_path, **kwargs):
     # Save the Pandas DataFrame to a file
     df.to_csv(transformed_path, index=False)
 
+    client.upload_file(
+        Filename=transformed_path,
+        Bucket="roadr-data-lake",
+        Key=f"transformed_data/mongodb_api/users/{ds}.csv",
+        ExtraArgs={"ACL": "public-read"},
+    )
+
+    # Delete the local file
+    os.remove(transformed_path)
+
     print(f"CSV file created successfully ({ds}).")
-
-
-# Define the function to fetch data from the API and save it to a file
-def _check_the_bucket_connection(
-    aws_access_key_id, aws_secret_access_key, endpoint_url, **kwargs
-):
-    # Getting the context of the task
-    ds = kwargs["ds"]
-    linode_obj_config = {
-        "aws_access_key_id": aws_access_key_id,
-        "aws_secret_access_key": aws_secret_access_key,
-        "endpoint_url": endpoint_url,
-    }
-
-    client = boto3.client("s3", **linode_obj_config)
-    response = client.list_buckets()
-    for bucket in response["Buckets"]:
-        print(bucket["Name"])
-
-    print(f"Connection successfully ({ds}).")

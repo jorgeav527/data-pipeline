@@ -12,7 +12,6 @@ from airflow.operators.empty import EmptyOperator
 from development.mongodb_api import (
     _fetch_mongo_api_to_json,
     _transform_users_to_csv,
-    _check_the_bucket_connection,
 )
 from development.rdstationcmr_api import (
     _fetch_rdstudioapicmr_contacts_to_json,
@@ -25,11 +24,9 @@ from helpers.variables_rdstation_api import (
     _contacts_colum_names,
 )
 from helpers.dev_helpers import _create_sql_file, _inject_sql_file_to_postgres
+from helpers.boto3_client import client_connection
 
 TOKEN = "63fec468e1dca1000c53a7e5"
-AWS_ACCESS_KEY_ID = "3MA6DHBKA62IV4CHEOBB"
-AWS_SECRET_ACCESS_KEY = "11vIyS93cAK7HEnejADV9NUnG0rxWMLdiQrxdfyR"
-ENDPOINT_URL = "https://us-southeast-1.linodeobjects.com"
 
 default_args = {
     "owner": "jorgeav527",
@@ -136,6 +133,7 @@ with DAG(
             "extracted_path": "bucket/extracted_data/mongodb_api_users_{{ds}}.json",
             "users_url": "http://192.168.0.13:3000/api/user/allusers?start_day=2022-07-27&end_day=2022-07-28",
             # "users_url": "http://192.168.0.13:3000/api/user/allusers?start_day={{data_interval_start.year}}-{{data_interval_start.month}}-{{data_interval_start.day}}&end_day={{data_interval_end.year}}-{{data_interval_end.month}}-{{data_interval_end.day}}",
+            "client": client_connection(),
         },
     )
 
@@ -146,6 +144,7 @@ with DAG(
         op_kwargs={
             "extracted_path": "bucket/extracted_data/mongodb_api_users_{{ds}}.json",
             "transformed_path": "bucket/transformed_data/mongodb_api_users_{{ds}}.csv",
+            "client": client_connection(),
         },
     )
 
@@ -164,6 +163,7 @@ with DAG(
             "transformed_path": "bucket/transformed_data/mongodb_api_users_{{ds}}.csv",
             "loaded_path": "bucket/loaded_data/mongodb_api_users_{{ds}}.sql",
             "table_name": "users",
+            "client": client_connection(),
         },
     )
 
@@ -173,17 +173,6 @@ with DAG(
         python_callable=_inject_sql_file_to_postgres,
         op_kwargs={
             "loaded_path": "bucket/loaded_data/mongodb_api_users_{{ds}}.sql",
-        },
-    )
-
-    # Inject the sql file into PostgresDB
-    check_the_bucket_connection = PythonOperator(
-        task_id="check_the_bucket_connection",
-        python_callable=_check_the_bucket_connection,
-        op_kwargs={
-            "aws_access_key_id": AWS_ACCESS_KEY_ID,
-            "aws_secret_access_key": AWS_SECRET_ACCESS_KEY,
-            "endpoint_url": ENDPOINT_URL,
         },
     )
 
@@ -227,7 +216,6 @@ with DAG(
         >> create_users_sql_table
         >> create_sql_users
         >> insert_users_to_postgres
-        >> check_the_bucket_connection
     )
     (
         [

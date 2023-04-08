@@ -1,13 +1,21 @@
+import os
+import requests
+
 import pandas as pd
 import psycopg2
 
 
 # Define a function that reads the CSV file and converts it to a SQL file
-def _create_sql_file(transformed_path, loaded_path, table_name, columns):
+def _create_sql_file(
+    client, transformed_path, loaded_path, table_name, columns, **kwargs
+):
+    # Getting the context of the task
+    ds = kwargs["ds"]
     print(f"transformed_path: {transformed_path}")
     print(f"loaded_path: {loaded_path}")
     # Read the CSV file into a Pandas dataframe
-    df = pd.read_csv(transformed_path)
+    url = f"https://roadr-data-lake.us-southeast-1.linodeobjects.com/transformed_data/mongodb_api/users/{ds}.csv"
+    df = pd.read_csv(url)
 
     # Open the SQL file in write mode
     with open(loaded_path, "w") as file:
@@ -37,6 +45,15 @@ def _create_sql_file(transformed_path, loaded_path, table_name, columns):
                     table_name, ",".join(columns), ",".join(values)
                 )
             )
+    client.upload_file(
+        Filename=loaded_path,
+        Bucket="roadr-data-lake",
+        Key=f"loaded_data/mongodb_api/users/{ds}.sql",
+        ExtraArgs={"ACL": "public-read"},
+    )
+
+    # Delete the local file
+    os.remove(loaded_path)
 
     # Print a message indicating that the SQL file has been created
     print("SQL file created successfully.")
@@ -59,8 +76,11 @@ def _inject_sql_file_to_postgres(loaded_path):
     cursor = conn.cursor()
 
     # Read the SQL file contents
-    with open(loaded_path, "r") as f:
-        sql = f.read()
+    url = f"https://roadr-data-lake.us-southeast-1.linodeobjects.com/loaded_data/mongodb_api/users/2023-04-07.sql"
+    response = requests.get(url)
+    # response.raise_for_status()  # raise an exception if the request fails
+    sql = response.text
+    print("sql", sql)
 
     # Execute the SQL script
     cursor.execute(sql)
