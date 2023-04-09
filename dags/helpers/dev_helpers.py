@@ -7,14 +7,15 @@ import psycopg2
 
 # Define a function that reads the CSV file and converts it to a SQL file
 def _create_sql_file(
-    client, transformed_path, loaded_path, table_name, columns, **kwargs
+    client, transformed_url, loaded_path, bucket_key_path, table_name, columns, **kwargs
 ):
     # Getting the context of the task
     ds = kwargs["ds"]
-    print(f"transformed_path: {transformed_path}")
+    print(f"transformed_url: {transformed_url}")
     print(f"loaded_path: {loaded_path}")
+    print(f"bucket_key_path: {bucket_key_path}")
     # Read the CSV file into a Pandas dataframe
-    url = f"https://roadr-data-lake.us-southeast-1.linodeobjects.com/transformed_data/mongodb_api/users/{ds}.csv"
+    url = transformed_url
     df = pd.read_csv(url)
 
     # Open the SQL file in write mode
@@ -48,7 +49,7 @@ def _create_sql_file(
     client.upload_file(
         Filename=loaded_path,
         Bucket="roadr-data-lake",
-        Key=f"loaded_data/mongodb_api/users/{ds}.sql",
+        Key=bucket_key_path,
         ExtraArgs={"ACL": "public-read"},
     )
 
@@ -59,8 +60,10 @@ def _create_sql_file(
     print("SQL file created successfully.")
 
 
-def _inject_sql_file_to_postgres(loaded_path):
-    print(f"loaded_path: {loaded_path}")
+def _inject_sql_file_to_postgres(loaded_url, **kwargs):
+    # Getting the context of the task
+    ds = kwargs["ds"]
+    print(f"loaded_url: {loaded_url}")
 
     # Define connection parameters
     conn_params = {
@@ -76,7 +79,7 @@ def _inject_sql_file_to_postgres(loaded_path):
     cursor = conn.cursor()
 
     # Read the SQL file contents
-    url = f"https://roadr-data-lake.us-southeast-1.linodeobjects.com/loaded_data/mongodb_api/users/2023-04-07.sql"
+    url = loaded_url
     response = requests.get(url)
     # response.raise_for_status()  # raise an exception if the request fails
     sql = response.text
@@ -93,4 +96,4 @@ def _inject_sql_file_to_postgres(loaded_path):
     conn.close()
 
     # Print a message indicating that the SQL file has been created
-    print("SQL file injected successfully.")
+    print(f"SQL file injected successfully ({ds}).")

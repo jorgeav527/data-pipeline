@@ -13,7 +13,9 @@ token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjNjODY1ZjM1M2
 
 
 # Define the function to fetch data from the API and save it to a file
-def _fetch_mongo_api_to_json(users_url, extracted_path, client, **kwargs):
+def _fetch_mongo_api_to_json(
+    extracted_path, users_url, bucket_key_path, client, **kwargs
+):
     # Getting the context of the task
     ds = kwargs["ds"]
     year_start, month_start, day_start, hour_start, *_start = kwargs[
@@ -25,6 +27,7 @@ def _fetch_mongo_api_to_json(users_url, extracted_path, client, **kwargs):
 
     print(f"extracted_path: {extracted_path}")
     print(f"users_url: {users_url}")
+    print(f"bucket_key_path: {bucket_key_path}")
 
     # Set the headers with the token
     headers = {"x-auth-token": token}
@@ -50,26 +53,29 @@ def _fetch_mongo_api_to_json(users_url, extracted_path, client, **kwargs):
     client.upload_file(
         Filename=extracted_path,
         Bucket="roadr-data-lake",
-        Key=f"extracted_data/mongodb_api/users/{ds}.json",
+        Key=bucket_key_path,
         ExtraArgs={"ACL": "public-read"},
     )
 
     # Delete the local file
     os.remove(extracted_path)
 
-    print(f"JSON file created successfully ({ds}).")
+    print(f"JSON file created, added to the bucket and removed successfully ({ds}).")
 
 
 # Define the function to read the JSON file and transform it into a Pandas DataFrame
-def _transform_users_to_csv(client, transformed_path, **kwargs):
+def _transform_users_to_csv(
+    extracted_url, transformed_path, bucket_key_path, client, **kwargs
+):
     # Getting the context of the task
     ds = kwargs["ds"]
 
+    print(f"extracted_url: {extracted_url}")
     print(f"transformed_path: {transformed_path}")
 
     # Read the JSON file into a Pandas DataFrame
     # load data using Python JSON module
-    url = f"https://roadr-data-lake.us-southeast-1.linodeobjects.com/extracted_data/mongodb_api/users/{ds}.json"
+    url = extracted_url
     data = pd.read_json(
         url,
         orient="records",
@@ -197,11 +203,11 @@ def _transform_users_to_csv(client, transformed_path, **kwargs):
     client.upload_file(
         Filename=transformed_path,
         Bucket="roadr-data-lake",
-        Key=f"transformed_data/mongodb_api/users/{ds}.csv",
+        Key=bucket_key_path,
         ExtraArgs={"ACL": "public-read"},
     )
 
     # Delete the local file
     os.remove(transformed_path)
 
-    print(f"CSV file created successfully ({ds}).")
+    print(f"CSV file created, added to the bucket and removed successfully ({ds}).")

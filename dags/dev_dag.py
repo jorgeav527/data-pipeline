@@ -130,9 +130,10 @@ with DAG(
         task_id="fetch_mongo_api_to_json",
         python_callable=_fetch_mongo_api_to_json,
         op_kwargs={
-            "extracted_path": "bucket/extracted_data/mongodb_api_users_{{ds}}.json",
             "users_url": "http://192.168.0.13:3000/api/user/allusers?start_day=2022-07-27&end_day=2022-07-28",
             # "users_url": "http://192.168.0.13:3000/api/user/allusers?start_day={{data_interval_start.year}}-{{data_interval_start.month}}-{{data_interval_start.day}}&end_day={{data_interval_end.year}}-{{data_interval_end.month}}-{{data_interval_end.day}}",
+            "extracted_path": "bucket/extracted_data/mongodb_api_users_{{ds}}.json",
+            "bucket_key_path": "extracted_data/mongodb_api/users/{{ds}}.json",
             "client": client_connection(),
         },
     )
@@ -142,8 +143,9 @@ with DAG(
         task_id="transform_users_to_csv",
         python_callable=_transform_users_to_csv,
         op_kwargs={
-            "extracted_path": "bucket/extracted_data/mongodb_api_users_{{ds}}.json",
+            "extracted_url": "https://roadr-data-lake.us-southeast-1.linodeobjects.com/extracted_data/mongodb_api/users/{{ds}}.json",
             "transformed_path": "bucket/transformed_data/mongodb_api_users_{{ds}}.csv",
+            "bucket_key_path": "transformed_data/mongodb_api/users/{{ds}}.csv",
             "client": client_connection(),
         },
     )
@@ -160,8 +162,9 @@ with DAG(
         python_callable=_create_sql_file,
         op_kwargs={
             "columns": _users_colum_names,
-            "transformed_path": "bucket/transformed_data/mongodb_api_users_{{ds}}.csv",
+            "transformed_url": "https://roadr-data-lake.us-southeast-1.linodeobjects.com/transformed_data/mongodb_api/users/{{ds}}.csv",
             "loaded_path": "bucket/loaded_data/mongodb_api_users_{{ds}}.sql",
+            "bucket_key_path": "loaded_data/mongodb_api/users/{{ds}}.sql",
             "table_name": "users",
             "client": client_connection(),
         },
@@ -172,7 +175,7 @@ with DAG(
         task_id="insert_users_to_postgres",
         python_callable=_inject_sql_file_to_postgres,
         op_kwargs={
-            "loaded_path": "bucket/loaded_data/mongodb_api_users_{{ds}}.sql",
+            "loaded_url": "https://roadr-data-lake.us-southeast-1.linodeobjects.com/loaded_data/mongodb_api/users/{{ds}}.sql",
         },
     )
 
