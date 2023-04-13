@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "pipeline-roadr"
+version = "0.1.0"
+description = "Data engineering pipeline for Roadr Inc."
+authors = ["jorgeav527 <jorgeav527@gmail.com>"]
+license = "Copyright 2023 Roadr Inc."
+readme = "README.md"
+packages = [{include = "pipeline_roadr"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.28.2"
+apache-airflow = "2.5.1"
+apache-airflow-providers-postgres = "*"
+apache-airflow-providers-mongo = "*"
+pandas = "1.5.3"
+pytest = "7.3.0"
+glom = "23.1.1"
+boto3 = "1.26.108"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "23.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
