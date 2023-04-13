@@ -1,11 +1,12 @@
 import json
 from datetime import datetime, timezone
+import os
 
 import pandas as pd
 import requests
 from glom import glom, Coalesce
 
-TOKEN = "63fec468e1dca1000c53a7e5"
+RDSTATION_API_TOKEN = os.environ.get("RDSTATION_API_TOKEN")
 
 
 # Define the function to fetch data from the API and save it to a file
@@ -22,7 +23,9 @@ def _fetch_rdstudioapicmr_contacts_to_json(extracted_path, **kwargs):
     print(f"extracted_path: {extracted_path}")
 
     # Url API for the CRM users
-    contacts_url = f"https://crm.rdstation.com/api/v1/contacts?token={TOKEN}"
+    contacts_url = (
+        f"https://crm.rdstation.com/api/v1/contacts?token={RDSTATION_API_TOKEN}"
+    )
     params = {"page": 1}
     all_items = []
 

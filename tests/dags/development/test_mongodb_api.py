@@ -2,16 +2,16 @@ import pytest
 import os
 import sys
 
-# Add the project directory to the system path
-AIRFLOW_PROJ_DIR = os.environ.get("AIRFLOW_HOME")
-sys.path.append(AIRFLOW_PROJ_DIR)
-from dags.helpers.variables_mongodb_api import _create_users_sql_table
+# # Add the project directory to the system path
+# AIRFLOW_PROJ_DIR = os.environ.get("AIRFLOW_HOME")
+# sys.path.append(AIRFLOW_PROJ_DIR)
+# from dags.helpers.variables_mongodb_api import _create_users_sql_table
+
+ROADR_API_TOKEN_X_AUTH_TOKEN = os.environ.get("ROADR_API_TOKEN_X_AUTH_TOKEN")
 
 from airflow.providers.http.sensors.http import HttpSensor
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.models import DagBag
-from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-from datetime import datetime
 
 
 @pytest.fixture(scope="session")
@@ -21,9 +21,7 @@ def check_mongodb_api_connection():
         task_id="check_mongodb_api_connection",
         http_conn_id="Mongo_DB_API",
         endpoint="api/user/allusers",
-        headers={
-            "x-auth-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjNjODY1ZjM1M2JkZjgyMGY5MjgxNjRjIn0sImlhdCI6MTY3OTM1ODE3N30.krlGV2QiC_KwGcVW38TrlszIPDnb6RSX_ML1Kt206YA"
-        },
+        headers={"x-auth-token": ROADR_API_TOKEN_X_AUTH_TOKEN},
         poke_interval=60,  # check the API connection every 60 seconds
         timeout=120,  # wait up to 120 seconds for a successful connection
     )

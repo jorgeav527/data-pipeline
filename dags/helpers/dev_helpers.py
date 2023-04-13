@@ -4,6 +4,12 @@ import requests
 import pandas as pd
 import psycopg2
 
+DB_USERNAME = os.environ.get("DB_USERNAME")
+DB_PASSWORD = os.environ.get("DB_PASSWORD")
+DB_HOST = os.environ.get("DB_HOST")
+DB_PORT = os.environ.get("DB_PORT")
+DB_NAME = os.environ.get("DB_NAME")
+
 
 # Define a function that reads the CSV file and converts it to a SQL file
 def _create_sql_file(
@@ -67,11 +73,11 @@ def _inject_sql_file_to_postgres(loaded_url, **kwargs):
 
     # Define connection parameters
     conn_params = {
-        "host": "lin-18905-6547-pgsql-primary.servers.linodedb.net",
-        "database": "postgres",
-        "user": "linpostgres",
-        "password": "bZu7-UgMYKY7fksN",
-        "port": 5432,
+        "user": DB_USERNAME,
+        "password": DB_PASSWORD,
+        "host": DB_HOST,
+        "port": DB_PORT,
+        "database": DB_NAME,
     }
 
     # Open a connection to the database

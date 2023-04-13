@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import os
 
 from airflow.models import DAG
 from airflow.providers.http.sensors.http import HttpSensor
@@ -26,7 +27,8 @@ from helpers.variables_rdstation_api import (
 from helpers.dev_helpers import _create_sql_file, _inject_sql_file_to_postgres
 from helpers.boto3_client import client_connection
 
-TOKEN = "63fec468e1dca1000c53a7e5"
+RDSTATION_API_TOKEN = os.environ.get("RDSTATION_API_TOKEN")
+ROADR_API_TOKEN_X_AUTH_TOKEN = os.environ.get("ROADR_API_TOKEN_X_AUTH_TOKEN")
 
 default_args = {
     "owner": "jorgeav527",
@@ -55,7 +57,7 @@ with DAG(
     check_api_rdstationcmr_connection = HttpSensor(
         task_id="check_api_rdstationcmr_connection",
         http_conn_id="RD_Studio_API",  # https://crm.rdstation.com/api/v1/contacts?token=MyToken&page=Page&limit=Limit&q=Query
-        endpoint=f"contacts?token={TOKEN}",
+        endpoint=f"contacts?token={RDSTATION_API_TOKEN}",
         response_check=lambda response: response.status_code == 200,
         poke_interval=60,  # check the API connection every 60 seconds
         timeout=120,  # wait up to 120 seconds for a successful connection
@@ -67,7 +69,7 @@ with DAG(
         python_callable=_fetch_rdstudioapicmr_contacts_to_json,
         op_kwargs={
             "extracted_path": "bucket/extracted_data/rdstationcmr_contacts_{{ds}}.json",
-            # "contacts_url": "https://crm.rdstation.com/api/v1/contacts?token={TOKEN}",
+            # "contacts_url": "https://crm.rdstation.com/api/v1/contacts?token={RDSTATION_API_TOKEN}",
         },
     )
 
@@ -117,9 +119,7 @@ with DAG(
         task_id="check_mongodb_api_connection",
         http_conn_id="Mongo_DB_API",
         endpoint="api/user/allusers",
-        headers={
-            "x-auth-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjNjODY1ZjM1M2JkZjgyMGY5MjgxNjRjIn0sImlhdCI6MTY3OTM1ODE3N30.krlGV2QiC_KwGcVW38TrlszIPDnb6RSX_ML1Kt206YA"
-        },
+        headers={"x-auth-token": ROADR_API_TOKEN_X_AUTH_TOKEN},
         response_check=lambda response: response.status_code == 200,
         poke_interval=60,  # check the API connection every 60 seconds
         timeout=120,  # wait up to 120 seconds for a successful connection

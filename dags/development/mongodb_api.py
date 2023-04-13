@@ -6,10 +6,10 @@ import os
 from glom import glom, Coalesce
 import pandas as pd
 
+ROADR_API_TOKEN_X_AUTH_TOKEN = os.environ.get("ROADR_API_TOKEN_X_AUTH_TOKEN")
 
 # Set the API endpoint and token
 # url = "http://localhost:3000/api/user/allusers?start_day=2022-07-27&end_day=2022-07-28"
-token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjNjODY1ZjM1M2JkZjgyMGY5MjgxNjRjIn0sImlhdCI6MTY3OTM1ODE3N30.krlGV2QiC_KwGcVW38TrlszIPDnb6RSX_ML1Kt206YA"
 
 
 # Define the function to fetch data from the API and save it to a file
@@ -30,7 +30,7 @@ def _fetch_mongo_api_to_json(
     print(f"bucket_key_path: {bucket_key_path}")
 
     # Set the headers with the token
-    headers = {"x-auth-token": token}
+    headers = {"x-auth-token": ROADR_API_TOKEN_X_AUTH_TOKEN}
 
     # Url API for the CRM users_url
     # users_url = f"http://192.168.0.13:3000/api/user/allusers?start_day={year_start}-{month_start}-{day_start}&end_day={year_end}-{month_end}-{day_end}"
@@ -99,9 +99,9 @@ def _transform_users_to_csv(
             "isActive": (Coalesce("isActive", default=False), bool),
             "isDeleted": (Coalesce("isDeleted", default=False), bool),
             "registerType": (Coalesce("registerType", default=""), str),
-            "profileImg_url": (Coalesce("profileImg_url", default=""), str),
-            "licenseImg_url": (Coalesce("licenseImg_url", default=""), str),
-            "insuranceImg_url": (Coalesce("insuranceImg_url", default=""), str),
+            "profileImg_url": (Coalesce("profileImg.uri", default=""), str),
+            "licenseImg_url": (Coalesce("licenseImg.uri", default=""), str),
+            "insuranceImg_url": (Coalesce("insuranceImg.uri", default=""), str),
             "date": (
                 "date",
                 lambda x: datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%f%z").strftime(
