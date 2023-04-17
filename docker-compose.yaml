@@ -61,13 +61,15 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
-    AIRFLOW__SMTP__SMTP_HOST: mail.roadr.com
-    AIRFLOW__SMTP__SMTP_MAIL_FROM: jv@roadr.com
-    AIRFLOW__SMTP__SMTP_PASSWORD: 7&y4e#O1+1uf
-    AIRFLOW__SMTP__SMTP_PORT: 587
-    AIRFLOW__SMTP__SMTP_SSL: False
-    AIRFLOW__SMTP__SMTP_STARTTLS: True
-    AIRFLOW__SMTP__SMTP_USER: jv@roadr.com
+    AIRFLOW__SMTP__SMTP_HOST: ${SMTP_HOST}
+    AIRFLOW__SMTP__SMTP_MAIL_FROM: ${SMTP_MAIL_FROM}
+    AIRFLOW__SMTP__SMTP_PASSWORD: ${SMTP_PASSWORD}
+    AIRFLOW__SMTP__SMTP_PORT: ${SMTP_PORT}
+    AIRFLOW__SMTP__SMTP_SSL: ${SMTP_SSL}
+    AIRFLOW__SMTP__SMTP_STARTTLS: ${SMTP_STARTTLS}
+    AIRFLOW__SMTP__SMTP_USER: ${SMTP_USER}
+  env_file:
+      - .env
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
@@ -76,6 +78,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/helpers:/opt/airflow/helpers
     - ${AIRFLOW_PROJ_DIR:-.}/tests:/opt/airflow/tests
     - ${AIRFLOW_PROJ_DIR:-.}/pytest.ini:/opt/airflow/pytest.ini
+    - ${AIRFLOW_PROJ_DIR:-.}/.pre-commit-config.yaml:/opt/airflow/.pre-commit-config.yaml
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on

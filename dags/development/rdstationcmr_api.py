@@ -1,10 +1,10 @@
 import json
-from datetime import datetime, timezone
 import os
+from datetime import datetime, timezone
 
 import pandas as pd
 import requests
-from glom import glom, Coalesce
+from glom import Coalesce, glom
 
 RDSTATION_API_TOKEN = os.environ.get("RDSTATION_API_TOKEN")
 
@@ -13,19 +13,13 @@ RDSTATION_API_TOKEN = os.environ.get("RDSTATION_API_TOKEN")
 def _fetch_rdstudioapicmr_contacts_to_json(extracted_path, **kwargs):
     # Getting the context of the task
     ds = kwargs["ds"]
-    year_start, month_start, day_start, hour_start, *_start = kwargs[
-        "data_interval_start"
-    ].timetuple()
-    year_end, month_end, day_end, hour_end, *_end = kwargs[
-        "data_interval_end"
-    ].timetuple()
+    year_start, month_start, day_start, hour_start, *_start = kwargs["data_interval_start"].timetuple()
+    year_end, month_end, day_end, hour_end, *_end = kwargs["data_interval_end"].timetuple()
 
     print(f"extracted_path: {extracted_path}")
 
     # Url API for the CRM users
-    contacts_url = (
-        f"https://crm.rdstation.com/api/v1/contacts?token={RDSTATION_API_TOKEN}"
-    )
+    contacts_url = f"https://crm.rdstation.com/api/v1/contacts?token={RDSTATION_API_TOKEN}"
     params = {"page": 1}
     all_items = []
 
@@ -52,9 +46,7 @@ def _fetch_rdstudioapicmr_contacts_to_json(extracted_path, **kwargs):
     filtered_data = [
         record
         for record in all_items
-        if start_date
-        <= datetime.fromisoformat(record["created_at"]).astimezone(timezone.utc)
-        < end_date
+        if start_date <= datetime.fromisoformat(record["created_at"]).astimezone(timezone.utc) < end_date
     ]
     # Save the response content to a file.
     with open(extracted_path, "w") as _file:
@@ -68,12 +60,8 @@ def _fetch_rdstudioapicmr_contacts_to_json(extracted_path, **kwargs):
 def _transform_contacts_to_csv(extracted_path, transformed_path, **kwargs):
     # Getting the context of the task
     ds = kwargs["ds"]
-    year_start, month_start, day_start, hour_start, *_start = kwargs[
-        "data_interval_start"
-    ].timetuple()
-    year_end, month_end, day_end, hour_end, *_end = kwargs[
-        "data_interval_end"
-    ].timetuple()
+    year_start, month_start, day_start, hour_start, *_start = kwargs["data_interval_start"].timetuple()
+    year_end, month_end, day_end, hour_end, *_end = kwargs["data_interval_end"].timetuple()
 
     print(f"extracted_path: {extracted_path}")
     print(f"transformed_path: {transformed_path}")
@@ -93,15 +81,11 @@ def _transform_contacts_to_csv(extracted_path, transformed_path, **kwargs):
                 "skype": (Coalesce("skype", default=""), str),
                 "created_at": (
                     "created_at",
-                    lambda x: datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%f%z").strftime(
-                        "%Y-%m-%d"
-                    ),
+                    lambda x: datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%f%z").strftime("%Y-%m-%d"),
                 ),
                 "updated_at": (
                     "updated_at",
-                    lambda x: datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%f%z").strftime(
-                        "%Y-%m-%d"
-                    ),
+                    lambda x: datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%f%z").strftime("%Y-%m-%d"),
                 ),
                 "email": ("emails", ["email"]),
                 "phone": ("phones", ["phone"]),

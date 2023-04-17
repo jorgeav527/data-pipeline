@@ -1,10 +1,10 @@
 import json
-import requests
-from datetime import datetime
 import os
+from datetime import datetime
 
-from glom import glom, Coalesce
 import pandas as pd
+import requests
+from glom import Coalesce, glom
 
 ROADR_API_TOKEN_X_AUTH_TOKEN = os.environ.get("ROADR_API_TOKEN_X_AUTH_TOKEN")
 
@@ -13,17 +13,11 @@ ROADR_API_TOKEN_X_AUTH_TOKEN = os.environ.get("ROADR_API_TOKEN_X_AUTH_TOKEN")
 
 
 # Define the function to fetch data from the API and save it to a file
-def _fetch_mongo_api_to_json(
-    extracted_path, users_url, bucket_key_path, client, **kwargs
-):
+def _fetch_mongo_api_to_json(extracted_path, users_url, bucket_key_path, client, **kwargs):
     # Getting the context of the task
     ds = kwargs["ds"]
-    year_start, month_start, day_start, hour_start, *_start = kwargs[
-        "data_interval_start"
-    ].timetuple()
-    year_end, month_end, day_end, hour_end, *_end = kwargs[
-        "data_interval_end"
-    ].timetuple()
+    year_start, month_start, day_start, hour_start, *_start = kwargs["data_interval_start"].timetuple()
+    year_end, month_end, day_end, hour_end, *_end = kwargs["data_interval_end"].timetuple()
 
     print(f"extracted_path: {extracted_path}")
     print(f"users_url: {users_url}")
@@ -33,7 +27,7 @@ def _fetch_mongo_api_to_json(
     headers = {"x-auth-token": ROADR_API_TOKEN_X_AUTH_TOKEN}
 
     # Url API for the CRM users_url
-    # users_url = f"http://192.168.0.13:3000/api/user/allusers?start_day={year_start}-{month_start}-{day_start}&end_day={year_end}-{month_end}-{day_end}"
+    # users_url = f"http://192.168.0.13:3000/api/user/allusers?start_day={year_start}-{month_start}-{day_start}&end_day={year_end}-{month_end}-{day_end}" # noqa: E501
     # users_url = f"http://192.168.0.13:3000/api/user/allusers?start_day=2022-07-27&end_day=2022-07-28"
 
     all_items = []
@@ -64,9 +58,7 @@ def _fetch_mongo_api_to_json(
 
 
 # Define the function to read the JSON file and transform it into a Pandas DataFrame
-def _transform_users_to_csv(
-    extracted_url, transformed_path, bucket_key_path, client, **kwargs
-):
+def _transform_users_to_csv(extracted_url, transformed_path, bucket_key_path, client, **kwargs):
     # Getting the context of the task
     ds = kwargs["ds"]
 
@@ -104,9 +96,7 @@ def _transform_users_to_csv(
             "insuranceImg_url": (Coalesce("insuranceImg.uri", default=""), str),
             "date": (
                 "date",
-                lambda x: datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%f%z").strftime(
-                    "%Y-%m-%d"
-                ),
+                lambda x: datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%f%z").strftime("%Y-%m-%d"),
             ),
             "__v": (Coalesce("__v", default=0), int),
             # Refuel

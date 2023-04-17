@@ -18,9 +18,7 @@ def test_dag_integrity(dagbag):
     - output: assert the dag id name, the existence of tasks, or if the dag is not None in each dag.
     - output: assert in each dag if no cycle infinite forloop exists.
     """
-    assert (
-        len(dagbag.import_errors) == 0
-    ), f"DAG import failures: {dagbag.import_errors}"
+    assert len(dagbag.import_errors) == 0, f"DAG import failures: {dagbag.import_errors}"
     for dag_id, dag in dagbag.dags.items():
         assert dag is not None
         assert dag.dag_id == dag_id

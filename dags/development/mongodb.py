@@ -1,8 +1,6 @@
 import json
-import pandas as pd
-import requests
-from datetime import datetime, timezone
 
+import pandas as pd
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 

@@ -1,31 +1,18 @@
-from datetime import datetime, timedelta
 import os
+from datetime import datetime, timedelta
 
 from airflow.models import DAG
-from airflow.providers.http.sensors.http import HttpSensor
-from airflow.providers.postgres.operators.postgres import PostgresOperator
-from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-from airflow.operators.python import PythonOperator
-from airflow.operators.bash import BashOperator
 from airflow.operators.email import EmailOperator
 from airflow.operators.empty import EmptyOperator
-
-from development.mongodb_api import (
-    _fetch_mongo_api_to_json,
-    _transform_users_to_csv,
-)
-from development.rdstationcmr_api import (
-    _fetch_rdstudioapicmr_contacts_to_json,
-    _transform_contacts_to_csv,
-)
-
-from helpers.variables_mongodb_api import _create_users_sql_table, _users_colum_names
-from helpers.variables_rdstation_api import (
-    _create_contacts_sql_table,
-    _contacts_colum_names,
-)
-from helpers.dev_helpers import _create_sql_file, _inject_sql_file_to_postgres
+from airflow.operators.python import PythonOperator
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from airflow.providers.http.sensors.http import HttpSensor
+from development.mongodb_api import _fetch_mongo_api_to_json, _transform_users_to_csv
+from development.rdstationcmr_api import _fetch_rdstudioapicmr_contacts_to_json, _transform_contacts_to_csv
 from helpers.boto3_client import client_connection
+from helpers.dev_helpers import _create_sql_file, _inject_sql_file_to_postgres
+from helpers.variables_mongodb_api import _create_users_sql_table, _users_colum_names
+from helpers.variables_rdstation_api import _contacts_colum_names, _create_contacts_sql_table
 
 RDSTATION_API_TOKEN = os.environ.get("RDSTATION_API_TOKEN")
 ROADR_API_TOKEN_X_AUTH_TOKEN = os.environ.get("ROADR_API_TOKEN_X_AUTH_TOKEN")
@@ -50,13 +37,13 @@ with DAG(
     template_searchpath="bucket",
 ) as dag:
     ####################################################
-    ##### CONTACTS (RD Station CMR API (contacts)) #####
+    # CONTACTS (RD Station CMR API (contacts))
     ####################################################
 
     # Define the HttpSensor to check if the connection is OK
     check_api_rdstationcmr_connection = HttpSensor(
         task_id="check_api_rdstationcmr_connection",
-        http_conn_id="RD_Studio_API",  # https://crm.rdstation.com/api/v1/contacts?token=MyToken&page=Page&limit=Limit&q=Query
+        http_conn_id="RD_Studio_API",  # https://crm.rdstation.com/api/v1/contacts?token=MyToken&page=Page&limit=Limit&q=Query # noqa: E501
         endpoint=f"contacts?token={RDSTATION_API_TOKEN}",
         response_check=lambda response: response.status_code == 200,
         poke_interval=60,  # check the API connection every 60 seconds
@@ -111,7 +98,7 @@ with DAG(
     )
 
     ##################################
-    ##### USERS (mongoDB(users)) #####
+    # USERS (mongoDB(users))
     ##################################
 
     # Set up the MongoDb API Sensor operator
@@ -131,7 +118,7 @@ with DAG(
         python_callable=_fetch_mongo_api_to_json,
         op_kwargs={
             "users_url": "http://192.168.0.13:3000/api/user/allusers?start_day=2022-07-27&end_day=2022-07-28",
-            # "users_url": "http://192.168.0.13:3000/api/user/allusers?start_day={{data_interval_start.year}}-{{data_interval_start.month}}-{{data_interval_start.day}}&end_day={{data_interval_end.year}}-{{data_interval_end.month}}-{{data_interval_end.day}}",
+            # "users_url": "http://192.168.0.13:3000/api/user/allusers?start_day={{data_interval_start.year}}-{{data_interval_start.month}}-{{data_interval_start.day}}&end_day={{data_interval_end.year}}-{{data_interval_end.month}}-{{data_interval_end.day}}", # noqa: E501
             "extracted_path": "bucket/extracted_data/mongodb_api_users_{{ds}}.json",
             "bucket_key_path": "extracted_data/mongodb_api/users/{{ds}}.json",
             "client": client_connection(),
@@ -143,7 +130,7 @@ with DAG(
         task_id="transform_users_to_csv",
         python_callable=_transform_users_to_csv,
         op_kwargs={
-            "extracted_url": "https://roadr-data-lake.us-southeast-1.linodeobjects.com/extracted_data/mongodb_api/users/{{ds}}.json",
+            "extracted_url": "https://roadr-data-lake.us-southeast-1.linodeobjects.com/extracted_data/mongodb_api/users/{{ds}}.json",  # noqa: E501
             "transformed_path": "bucket/transformed_data/mongodb_api_users_{{ds}}.csv",
             "bucket_key_path": "transformed_data/mongodb_api/users/{{ds}}.csv",
             "client": client_connection(),
@@ -162,7 +149,7 @@ with DAG(
         python_callable=_create_sql_file,
         op_kwargs={
             "columns": _users_colum_names,
-            "transformed_url": "https://roadr-data-lake.us-southeast-1.linodeobjects.com/transformed_data/mongodb_api/users/{{ds}}.csv",
+            "transformed_url": "https://roadr-data-lake.us-southeast-1.linodeobjects.com/transformed_data/mongodb_api/users/{{ds}}.csv",  # noqa: E501
             "loaded_path": "bucket/loaded_data/mongodb_api_users_{{ds}}.sql",
             "bucket_key_path": "loaded_data/mongodb_api/users/{{ds}}.sql",
             "table_name": "users",
@@ -175,12 +162,12 @@ with DAG(
         task_id="insert_users_to_postgres",
         python_callable=_inject_sql_file_to_postgres,
         op_kwargs={
-            "loaded_url": "https://roadr-data-lake.us-southeast-1.linodeobjects.com/loaded_data/mongodb_api/users/{{ds}}.sql",
+            "loaded_url": "https://roadr-data-lake.us-southeast-1.linodeobjects.com/loaded_data/mongodb_api/users/{{ds}}.sql",  # noqa: E501
         },
     )
 
     ##################################
-    ##### Others #####
+    # Others
     ##################################
 
     # Empty operator

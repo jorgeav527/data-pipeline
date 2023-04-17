@@ -9,7 +9,7 @@ _create_contacts_sql_table = """
         skype VARCHAR(255) NULL,
         created_at TIMESTAMP NULL,
         updated_at TIMESTAMP NULL,
-        email VARCHAR(255) NULL, 
+        email VARCHAR(255) NULL,
         phone VARCHAR(255) NULL
     );
 """

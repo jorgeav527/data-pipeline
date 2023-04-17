@@ -1,6 +1,9 @@
-import pytest
 import os
-import sys
+
+import pytest
+from airflow.models import DagBag
+from airflow.providers.http.sensors.http import HttpSensor
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 # # Add the project directory to the system path
 # AIRFLOW_PROJ_DIR = os.environ.get("AIRFLOW_HOME")
@@ -8,10 +11,6 @@ import sys
 # from dags.helpers.variables_mongodb_api import _create_users_sql_table
 
 ROADR_API_TOKEN_X_AUTH_TOKEN = os.environ.get("ROADR_API_TOKEN_X_AUTH_TOKEN")
-
-from airflow.providers.http.sensors.http import HttpSensor
-from airflow.providers.postgres.hooks.postgres import PostgresHook
-from airflow.models import DagBag
 
 
 @pytest.fixture(scope="session")
@@ -51,8 +50,8 @@ def test_create_users_sql_table(postgres_hook):
 
     # Check if the table exists
     assert (
-        postgres_hook.get_records(
-            "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')"
-        )[0][0]
+        postgres_hook.get_records("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')")[
+            0
+        ][0]
         is True
     )

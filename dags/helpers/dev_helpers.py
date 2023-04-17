@@ -1,8 +1,8 @@
 import os
-import requests
 
 import pandas as pd
 import psycopg2
+import requests
 
 DB_USERNAME = os.environ.get("DB_USERNAME")
 DB_PASSWORD = os.environ.get("DB_PASSWORD")
@@ -12,9 +12,7 @@ DB_NAME = os.environ.get("DB_NAME")
 
 
 # Define a function that reads the CSV file and converts it to a SQL file
-def _create_sql_file(
-    client, transformed_url, loaded_path, bucket_key_path, table_name, columns, **kwargs
-):
+def _create_sql_file(client, transformed_url, loaded_path, bucket_key_path, table_name, columns, **kwargs):
     # Getting the context of the task
     ds = kwargs["ds"]
     print(f"transformed_url: {transformed_url}")
@@ -47,11 +45,7 @@ def _create_sql_file(
                     values.append("'{}'".format(str(value).replace("'", '"')))
 
             # Write the SQL statement to the file
-            file.write(
-                "INSERT INTO {} ({}) VALUES ({});\n".format(
-                    table_name, ",".join(columns), ",".join(values)
-                )
-            )
+            file.write("INSERT INTO {} ({}) VALUES ({});\n".format(table_name, ",".join(columns), ",".join(values)))
     client.upload_file(
         Filename=loaded_path,
         Bucket="roadr-data-lake",
@@ -63,7 +57,7 @@ def _create_sql_file(
     os.remove(loaded_path)
 
     # Print a message indicating that the SQL file has been created
-    print("SQL file created successfully.")
+    print(f"SQL file created successfully ({ds}).")
 
 
 def _inject_sql_file_to_postgres(loaded_url, **kwargs):
