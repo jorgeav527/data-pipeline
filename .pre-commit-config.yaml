@@ -1,7 +1,7 @@
 default_stages: [commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.3.0
+    rev: v4.4.0
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
@@ -11,7 +11,7 @@ repos:
       - id: check-yaml
 
   - repo: https://github.com/psf/black
-    rev: 22.10.0
+    rev: 23.3.0
     hooks:
       - id: black
 
@@ -32,28 +32,3 @@ repos:
   #     - id: mypy
   #       exclude: ^tests/
   #       args: [--strict]
-
-  - repo: https://github.com/python-poetry/poetry
-    rev: 1.4.2
-    hooks:
-      - id: poetry-check
-      - id: poetry-lock
-      - id: poetry-export
-        args:
-          [
-            "--dev",
-            "-f",
-            "requirements.txt",
-            "-o",
-            "requirements_dev.txt",
-            "--without-hashes",
-          ]
-      - id: poetry-export
-        args:
-          [
-            "-f",
-            "requirements.txt",
-            "-o",
-            "requirements.txt",
-            "--without-hashes",
-          ]
