@@ -77,8 +77,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/bucket:/opt/airflow/bucket
     - ${AIRFLOW_PROJ_DIR:-.}/helpers:/opt/airflow/helpers
     - ${AIRFLOW_PROJ_DIR:-.}/tests:/opt/airflow/tests
-    - ${AIRFLOW_PROJ_DIR:-.}/pytest.ini:/opt/airflow/pytest.ini
-    - ${AIRFLOW_PROJ_DIR:-.}/.pre-commit-config.yaml:/opt/airflow/.pre-commit-config.yaml
+    # - ${AIRFLOW_PROJ_DIR:-.}/pytest.ini:/opt/airflow/pytest.ini
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -111,6 +110,18 @@ services:
       interval: 5s
       timeout: 30s
       retries: 50
+    restart: always
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    environment:
+      JENKINS_USER: airflow
+      JENKINS_PASS: airflow
+    volumes:
+      - jenkins-data:/var/jenkins_home
     restart: always
 
   airflow-webserver:
@@ -292,3 +303,4 @@ services:
 
 volumes:
   postgres-db-volume:
+  jenkins-data:
