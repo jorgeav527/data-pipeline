@@ -1,3 +1,13 @@
+# ==== pytest ====
+[tool.pytest.ini_options]
+addopts = "-p no:warnings"
+norecursedirs = [
+    ".tox",
+    ".git",
+    "docs",
+    "venv",
+]
+
 # ==== black ====
 [tool.black]
 line-length = 119

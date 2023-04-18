@@ -4,12 +4,9 @@
 
 ## Project Description
 
-This pipeline should be built using the appropriate architecture and base technologies. Additionally, it must embrace a DevOps culture with continuous integration and continuous delivery (CI/CD).
-The main objective is to clean the data and have an OLAP system in place so that we can start analyzing and visualizing the data to gain insights and make data-driven decisions.
-
 **What it is?** 💡 To generate insights about Roadr, As soon as the application launches, we need to prepare a data pipeline with Airflow. This pipeline should be built using the appropriate architecture and base technologies. Additionally, it must embrace a DevOps culture with continuous integration and continuous delivery (CI/CD). **Why did you build this project?** 💡 The main objective is to clean the data and have an OLAP system in place so that we can start analyzing and visualizing the data to gain insights and make data-driven decisions.
 
-**What was my motivation?** 💡 We require a Data Engineering tool to manage the OLAP system, one that can connect to various cloud services and other tools on a regular basis. This is the first stage in transforming the startup into a data-driven company.. **What did you learn?** 💡 "Agile methodologies (SCRUM) and a Git workflow with Jira", "The pipeline was built using the architectures of ETL with Airflow running as a web service", "Data Analytics with simple Notebooks", "Data Lake and Data Warehouse as a Service in Linode Cloud", "Docker for development and production environments", "Unit, Integration, system testting", "CI/CD with Jenkins".
+**What was my motivation?** 💡 We require a Data Engineering tool to manage the OLAP system, one that can connect to various cloud services and other tools on a regular basis. This is the first stage in transforming the startup into a data-driven company.. **What did you learn? (Quality goals)** 💡 "Agile methodologies (SCRUM) and a Git workflow with Jira", "The pipeline was built using the architectures of ETL with Airflow running as a web service", "Data Analytics with simple Notebooks", "Data Lake and Data Warehouse as a Service in Linode Cloud", "Docker for development and production environments", "Unit, Integration, system testting", "CI/CD with Jenkins".
 
 ## Table of Contents
 
@@ -18,53 +15,55 @@ The main objective is to clean the data and have an OLAP system in place so that
 - [Roadr ETL](#roadr-etl)
   - [Project Description](#project-description)
   - [Table of Contents](#table-of-contents)
+  - [Architectural Decision Record (ADR)](#architectural-decision-record-adr)
     - [1. Architecture](#1-architecture)
     - [2. Planning](#2-planning)
-    - [3. DevOps](#3-devops)
     - [3. ETL](#3-etl)
-    - [5. Services &amp; Tools](#5-services--tools)
-  - [Products](#products)
+    - [4. Services &amp; Tools](#4-services--tools)
+  - [Quick-start and Installation Guide](#quick-start-and-installation-guide)
+    - [1. Localy](#1-localy)
+    - [2. Production](#2-production)
+  - [Technical Documentation](#technical-documentation)
     - [1. Airflow](#1-airflow)
     - [2. Data Lake](#2-data-lake)
     - [3. Data Warehouse](#3-data-warehouse)
     - [4. CI/CD](#4-cicd)
-  - [How to Install and Run the Project](#how-to-install-and-run-the-project)
-    - [1. Localy](#1-localy)
-    - [2. Production](#2-production)
+    - [5. Risks and Technical Debt](#5-risks-and-technical-debt)
   - [Testting](#testting)
     - [1. Unit Testing](#1-unit-testing)
     - [2. Integration Testing](#2-integration-testing)
     - [3. System Testing](#3-system-testing)
   - [How to ...](#how-to-)
     - [1. Contribute](#1-contribute)
+  - [FAQ](#faq)
   - [+ Info](#-info)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: jorgeav527, at: Wed 12 Apr 23:32:05 -05 2023 -->
+<!-- Added by: jorgeav527, at: Tue 18 Apr 09:34:59 -05 2023 -->
 
 <!--te-->
 
+## Architectural Decision Record (ADR)
+
 ### 1. Architecture
+
+- Solution Strategy
+- Building Block View
 
 ### 2. Planning
 
-### 3. DevOps
+- Runtime View
 
 ### 3. ETL
 
-### 5. Services & Tools
+- Context and Scope
 
-## Products
+### 4. Services & Tools
 
-### 1. Airflow
+- Architectural Decisions
+- Constraints
 
-### 2. Data Lake
-
-### 3. Data Warehouse
-
-### 4. CI/CD
-
-## How to Install and Run the Project
+## Quick-start and Installation Guide
 
 ### 1. Localy
 
@@ -154,6 +153,18 @@ The main objective is to clean the data and have an OLAP system in place so that
 
 - Open 8080 port and run the _Dag_for_production_.
 
+## Technical Documentation
+
+### 1. Airflow
+
+### 2. Data Lake
+
+### 3. Data Warehouse
+
+### 4. CI/CD
+
+### 5. Risks and Technical Debt
+
 ## Testting
 
 ### 1. Unit Testing
@@ -170,6 +181,12 @@ The main objective is to clean the data and have an OLAP system in place so that
 
 - Alternatively, you can access the notebooks in the draft file in which the code is developed step by step.
 
+## FAQ
+
+- **Question?**
+
+  _Responsible_
+
 ## + Info
 
 - [helper link](https://airflow.apache.org/docs/)
@@ -182,3 +199,4 @@ The main objective is to clean the data and have an OLAP system in place so that
 - [flake8](https://flake8.pycqa.org/en/latest/)
 - [Flake8-pyproject](https://github.com/john-hen/Flake8-pyproject)
 - [devguide python](https://devguide.python.org/getting-started/)
+- [How should you document/communicate?](https://arc42.org/overview)
