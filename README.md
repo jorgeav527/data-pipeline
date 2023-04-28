@@ -163,15 +163,23 @@
 
 ### 4. CI/CD
 
+- Agile: emphasizes adaptive planning and evolutionary development. Work is planned and completed in "sprints" (usually 1-2 weeks of work), with frequent (usually daily) "scrums" where all team members report progress and plan their next steps. See the Agile Manifesto.
+
+- DevOps: extends the Agile philosophy into operations and production by advocating for the automation and monitoring of all steps in the development cycle. See What is Devops?
+
+- Continuous: implements Agile and Devops philosophies with tools that standardize the steps in the process and thoroughly test each code modification before it is integrated into the official source.
+
 ### 5. Risks and Technical Debt
 
-## Testting
+## Tests
 
-### 1. Unit Testing
+<kbd><img src="https://i.imgur.com/qnNF61i.png" alt="image" width="500"></kbd>
 
-### 2. Integration Testing
+### 1. Unit Tests
 
-### 3. System Testing
+### 2. Integration Tests
+
+### 3. System Tests (Smoke)
 
 ## How to ...
 
@@ -200,3 +208,7 @@
 - [Flake8-pyproject](https://github.com/john-hen/Flake8-pyproject)
 - [devguide python](https://devguide.python.org/getting-started/)
 - [How should you document/communicate?](https://arc42.org/overview)
+- [UnitTest](https://martinfowler.com/bliki/UnitTest.html)
+- [TestCoverage](https://martinfowler.com/bliki/TestCoverage.html)
+- [What is apache maven?](https://maven.apache.org/what-is-maven.html)
+- [What is a makefile?](https://linux.die.net/man/1/make)
