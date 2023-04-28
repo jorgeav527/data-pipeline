@@ -7,15 +7,18 @@ from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.providers.http.sensors.http import HttpSensor
-from development.mongodb_api import _fetch_mongo_api_to_json, _transform_users_to_csv
+from development.mongodb_api import _check_mongodb_api_connection, _fetch_mongo_api_to_json, _transform_users_to_csv
 from development.rdstationcmr_api import _fetch_rdstudioapicmr_contacts_to_json, _transform_contacts_to_csv
 from helpers.boto3_client import client_connection
-from helpers.dev_helpers import _create_sql_file, _inject_sql_file_to_postgres
+from helpers.sql_helpers import _create_sql_file, _inject_sql_to_postgres
 from helpers.variables_mongodb_api import _create_users_sql_table, _users_colum_names
 from helpers.variables_rdstation_api import _contacts_colum_names, _create_contacts_sql_table
 
+# Access environment variables from the .env file.
 RDSTATION_API_TOKEN = os.environ.get("RDSTATION_API_TOKEN")
 ROADR_API_TOKEN_X_AUTH_TOKEN = os.environ.get("ROADR_API_TOKEN_X_AUTH_TOKEN")
+ROADR_API = os.environ.get("ROADR_API")
+AWS_BUCKET = os.environ.get("AWS_BUCKET")
 
 default_args = {
     "owner": "jorgeav527",
@@ -29,8 +32,8 @@ default_args = {
 
 with DAG(
     default_args=default_args,
-    dag_id="ETL_develoment_v11",
-    start_date=datetime(2023, 4, 1),
+    dag_id="ETL_develoment_v13",
+    start_date=datetime(2023, 4, 24),
     schedule="@daily",  # will be "@daily"
     catchup=True,
     tags=["rd_studio_api"],
@@ -91,65 +94,63 @@ with DAG(
     # Inject the sql file into PostgresDB
     insert_contacts_to_postgres = PythonOperator(
         task_id="insert_contacts_to_postgres",
-        python_callable=_inject_sql_file_to_postgres,
+        python_callable=_inject_sql_to_postgres,
         op_kwargs={
             "loaded_path": "bucket/loaded_data/rdstationcmr_contacts_{{ds}}.sql",
         },
     )
 
     ##################################
-    # USERS (mongoDB(users))
+    # USERS [/api/user/allusers]
     ##################################
 
-    # Set up the MongoDb API Sensor operator
-    check_mongodb_api_connection = HttpSensor(
+    check_mongodb_api_connection = PythonOperator(
         task_id="check_mongodb_api_connection",
-        http_conn_id="Mongo_DB_API",
-        endpoint="api/user/allusers",
-        headers={"x-auth-token": ROADR_API_TOKEN_X_AUTH_TOKEN},
-        response_check=lambda response: response.status_code == 200,
-        poke_interval=60,  # check the API connection every 60 seconds
-        timeout=120,  # wait up to 120 seconds for a successful connection
+        python_callable=_check_mongodb_api_connection,
+        op_kwargs={
+            "api_token": ROADR_API_TOKEN_X_AUTH_TOKEN,
+            "url": ROADR_API,
+        },
     )
 
-    # Define the PythonOperator to fetch and save users
     fetch_mongo_api_to_json = PythonOperator(
         task_id="fetch_mongo_api_to_json",
         python_callable=_fetch_mongo_api_to_json,
         op_kwargs={
-            "users_url": "http://192.168.0.13:3000/api/user/allusers?start_day=2022-07-27&end_day=2022-07-28",
-            # "users_url": "http://192.168.0.13:3000/api/user/allusers?start_day={{data_interval_start.year}}-{{data_interval_start.month}}-{{data_interval_start.day}}&end_day={{data_interval_end.year}}-{{data_interval_end.month}}-{{data_interval_end.day}}", # noqa: E501
+            "users_url": f"{ROADR_API}" + "/api/user/allusers?start_day=2023-04-22&end_day=2023-04-23",
+            # "users_url": f"{ROADR_API}" + "/api/user/allusers?
+            # start_day={{data_interval_start.year}}-{{data_interval_start.month}}-{{data_interval_start.day}}&
+            # end_day={{data_interval_end.year}}-{{data_interval_end.month}}-{{data_interval_end.day}}",
             "extracted_path": "bucket/extracted_data/mongodb_api_users_{{ds}}.json",
+            "api_token": ROADR_API_TOKEN_X_AUTH_TOKEN,
             "bucket_key_path": "extracted_data/mongodb_api/users/{{ds}}.json",
             "client": client_connection(),
         },
     )
 
-    # Define the PythonOperator to transform and save users
     transform_users_to_csv = PythonOperator(
         task_id="transform_users_to_csv",
         python_callable=_transform_users_to_csv,
         op_kwargs={
-            "extracted_url": "https://roadr-data-lake.us-southeast-1.linodeobjects.com/extracted_data/mongodb_api/users/{{ds}}.json",  # noqa: E501
+            "extracted_url": f"{AWS_BUCKET}" + "/extracted_data/mongodb_api/users/{{ds}}.json",
             "transformed_path": "bucket/transformed_data/mongodb_api_users_{{ds}}.csv",
             "bucket_key_path": "transformed_data/mongodb_api/users/{{ds}}.csv",
             "client": client_connection(),
         },
     )
 
-    create_users_sql_table = SQLExecuteQueryOperator(
+    create_users_sql_table = PythonOperator(
         task_id="create_users_sql_table",
-        sql=_create_users_sql_table,
-        conn_id="Postgres_ID",
+        python_callable=_inject_sql_to_postgres,
+        op_kwargs={"sql_table": _create_users_sql_table},
     )
 
-    # Create a PythonOperator to create a sql file
     create_sql_users = PythonOperator(
         task_id="create_sql_users",
         python_callable=_create_sql_file,
         op_kwargs={
             "columns": _users_colum_names,
-            "transformed_url": "https://roadr-data-lake.us-southeast-1.linodeobjects.com/transformed_data/mongodb_api/users/{{ds}}.csv",  # noqa: E501
+            "transformed_url": f"{AWS_BUCKET}" + "/transformed_data/mongodb_api/users/{{ds}}.csv",
             "loaded_path": "bucket/loaded_data/mongodb_api_users_{{ds}}.sql",
             "bucket_key_path": "loaded_data/mongodb_api/users/{{ds}}.sql",
             "table_name": "users",
@@ -160,9 +161,9 @@ with DAG(
     # Inject the sql file into PostgresDB
     insert_users_to_postgres = PythonOperator(
         task_id="insert_users_to_postgres",
-        python_callable=_inject_sql_file_to_postgres,
+        python_callable=_inject_sql_to_postgres,
         op_kwargs={
-            "loaded_url": "https://roadr-data-lake.us-southeast-1.linodeobjects.com/loaded_data/mongodb_api/users/{{ds}}.sql",  # noqa: E501
+            "loaded_url": f"{AWS_BUCKET}" + "/loaded_data/mongodb_api/users/{{ds}}.sql",
         },
     )
 

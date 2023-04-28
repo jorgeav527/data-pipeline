@@ -1,49 +1,99 @@
 import json
 import os
+import time
 from datetime import datetime
 
 import pandas as pd
 import requests
 from glom import Coalesce, glom
 
-ROADR_API_TOKEN_X_AUTH_TOKEN = os.environ.get("ROADR_API_TOKEN_X_AUTH_TOKEN")
 
-# Set the API endpoint and token
-# url = "http://localhost:3000/api/user/allusers?start_day=2022-07-27&end_day=2022-07-28"
+def _check_mongodb_api_connection(api_token, url):
+    """
+    Check the MongoDB API connection by sending a GET request to the specified URL with headers containing the API token.
+    This function will try to connect to the API every 60 seconds until it succeeds or until the timeout of 120 seconds is reached.
+
+    Args:
+    - api_token (string): The API token to authenticate the request.
+    - url (string): The URL endpoint to check the connection against.
+
+    Returns:
+    - True if the connection was successful, False otherwise.
+    """  # noqa: E501
+    # To debug the parameters.
+    print(f"api_token: {api_token}")
+    print(f"url: {url}")
+
+    headers = {"x-auth-token": api_token}
+    timeout = 120  # Seconds.
+    poke_interval = 60  # Seconds.
+    start_time = time.time()  # Record the start time of the script execution.
+
+    # Continuously send requests until a 200 response code is received or the timeout is reached.
+    while True:
+        try:
+            response = requests.get(url, headers=headers, timeout=timeout)
+            if response.status_code == 200:
+                return True
+        except Exception as error:
+            # If an error occurs (e.g. connection refused), ignore it and continue the loop.
+            print("An error occurred while connecting to the API:", error, sep="\n")
+            pass
+
+        # If the timeout has been reached, return False to indicate failure.
+        if time.time() - start_time > timeout:
+            return False
+
+        # Pause for the specified interval before sending the next request.
+        time.sleep(poke_interval)
 
 
-# Define the function to fetch data from the API and save it to a file
-def _fetch_mongo_api_to_json(extracted_path, users_url, bucket_key_path, client, **kwargs):
-    # Getting the context of the task
+def _fetch_mongo_api_to_json(extracted_path, api_token, users_url, bucket_key_path, client, **kwargs):
+    """
+    Sending a GET request to the specified URL (/api/user/allusers) with headers and (?start_day=<YYYY-MM-DD>&end_day=<YYYY-MM-DD>) parameters.
+    This function will retrieve data from the API on a daily basis and save it in YYYY-MM-DD.json format into a S3 bucket.
+
+    Args:
+    - extracted_path (string): The temporary path (bucket/extracted_data/*.json) where the data will be saved.
+    - api_token (string): The API token to authenticate the request.
+    - users_url (string): The URL endpoint to fetch the data.
+    - bucket_key_path (string): The actual bucket path where the extracted data will be saved.
+    - client (object): Call the boto3 client to connect to the bucket.
+    **kwargs:
+    - kwargs["ds"] (dictionary): The day that the task ends up happening.
+
+    Returns:
+    - A string "JSON file was successfully added to the bucket as at ({ds}.json).". If the data was succesfully extracted.
+    """  # noqa: E501
+
+    # Getting some information from the task's context.
     ds = kwargs["ds"]
-    year_start, month_start, day_start, hour_start, *_start = kwargs["data_interval_start"].timetuple()
-    year_end, month_end, day_end, hour_end, *_end = kwargs["data_interval_end"].timetuple()
 
+    # To debug the parameters.
     print(f"extracted_path: {extracted_path}")
+    print(f"api_token: {api_token}")
     print(f"users_url: {users_url}")
     print(f"bucket_key_path: {bucket_key_path}")
 
-    # Set the headers with the token
-    headers = {"x-auth-token": ROADR_API_TOKEN_X_AUTH_TOKEN}
+    # Set the headers with the token.
+    headers = {"x-auth-token": api_token}
 
-    # Url API for the CRM users_url
-    # users_url = f"http://192.168.0.13:3000/api/user/allusers?start_day={year_start}-{month_start}-{day_start}&end_day={year_end}-{month_end}-{day_end}" # noqa: E501
-    # users_url = f"http://192.168.0.13:3000/api/user/allusers?start_day=2022-07-27&end_day=2022-07-28"
-
+    # Make an empty list to append the data to.
     all_items = []
 
-    # Send the GET request to the API with the headers
+    # Send the GET request to the API with the headers.
     response = requests.get(users_url, headers=headers)
 
-    # Check if the request was successful
+    # Check if the request was successful.
     if response.status_code == 200:
         all_items.extend(response.json())
 
-    # Save the response content to a file.
+    # Save the response content to a temporaly file.
     with open(extracted_path, "w") as _file:
-        # Write the list of dictionaries to a JSON file
+        # Write the list of dictionaries to a JSON file.
         json.dump(all_items, _file)
 
+    # Call the S3 bucket client to save a file.
     client.upload_file(
         Filename=extracted_path,
         Bucket="roadr-data-lake",
@@ -51,29 +101,46 @@ def _fetch_mongo_api_to_json(extracted_path, users_url, bucket_key_path, client,
         ExtraArgs={"ACL": "public-read"},
     )
 
-    # Delete the local file
+    # Delete the local file.
     os.remove(extracted_path)
 
-    print(f"JSON file created, added to the bucket and removed successfully ({ds}).")
+    print(f"JSON file successfully added to the bucket at ({ds}.json).")
 
 
-# Define the function to read the JSON file and transform it into a Pandas DataFrame
 def _transform_users_to_csv(extracted_url, transformed_path, bucket_key_path, client, **kwargs):
+    """
+    Sending a GET request to get the extracted daily YYYY-MM-DD.json file from the bucket file.
+    This function should extract the YYYY-MM-DD.json data file and then transform and convert it to a more structured CVS file format.
+    Only selected fields will be saved.
+
+    Args:
+    - extracted_url (string): The actual bucket path where the extracted data will be pulled.
+    - transformed_path (string): The temporary path (bucket/transformed_data/*.csv) where the data will be saved.
+    - bucket_key_path (string): The actual bucket path where the transformed data will be saved.
+    - client (object): Call the boto3 client to connect to the bucket.
+    **kwargs:
+    - kwargs["ds"] (dictionary): The day that the task ends up happening.
+
+    Returns:
+    - A string "CSV file was successfully added to the bucket as at ({ds}.csv).". If the data was succesfully transformed.
+    """  # noqa: E501
+
     # Getting the context of the task
     ds = kwargs["ds"]
 
+    # To debug the parameters.
     print(f"extracted_url: {extracted_url}")
     print(f"transformed_path: {transformed_path}")
+    print(f"bucket_key_path: {bucket_key_path}")
 
-    # Read the JSON file into a Pandas DataFrame
-    # load data using Python JSON module
-    url = extracted_url
+    # Read the JSON file with a Pandas DataFrame.
     data = pd.read_json(
-        url,
+        extracted_url,
         orient="records",
         typ="series",
     )
 
+    # Make a glom expression that converts and flattens a JSON data file to a CSV data file.
     expr = [
         {
             "_id": "_id",
@@ -184,12 +251,13 @@ def _transform_users_to_csv(extracted_url, transformed_path, bucket_key_path, cl
         }
     ]
 
-    # Use glom to extract the flattened data
+    # Use glom to extract the flattened data and transform it into a dataframe.
     df = pd.DataFrame(glom(data, expr))
 
-    # Save the Pandas DataFrame to a file
+    # Save the Pandas DataFrame to a CSV file.
     df.to_csv(transformed_path, index=False)
 
+    # Call the S3 bucket client to save a file.
     client.upload_file(
         Filename=transformed_path,
         Bucket="roadr-data-lake",
@@ -200,4 +268,4 @@ def _transform_users_to_csv(extracted_url, transformed_path, bucket_key_path, cl
     # Delete the local file
     os.remove(transformed_path)
 
-    print(f"CSV file created, added to the bucket and removed successfully ({ds}).")
+    print(f"CSV file was successfully added to the bucket at ({ds}.csv).")
