@@ -25,8 +25,8 @@ def _check_mongodb_api_connection(api_token, url):
     print(f"url: {url}")
 
     headers = {"x-auth-token": api_token}
-    timeout = 120  # Seconds.
-    poke_interval = 60  # Seconds.
+    timeout = 30  # Seconds.
+    poke_interval = 15  # Seconds.
     start_time = time.time()  # Record the start time of the script execution.
 
     # Continuously send requests until a 200 response code is received or the timeout is reached.
