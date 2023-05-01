@@ -29,14 +29,13 @@ pipeline {
     }
     stage('Test') {
       steps {
-        // sh 'docker exec data-pipeline_develop-airflow-webserver-1 bash -c "python3 -m pytest -v"'
-        sh 'docker network ls'
+        sh 'docker exec data-pipeline_develop-airflow-webserver-1 bash -c "python3 -m pytest -v"'
+        // sh 'docker network ls'
       }
     }
   }
   post {
     always {
-      sh 'docker system prune -a --volumes -f'
       cleanWs()
     }
   }
