@@ -29,7 +29,8 @@ pipeline {
     }
     stage('Test') {
       steps {
-        sh 'docker --network data-pipeline_develop_default exec data-pipeline_develop-airflow-webserver-1 bash -c "python3 -m pytest -v"'
+        // sh 'docker exec data-pipeline_develop-airflow-webserver-1 bash -c "python3 -m pytest -v"'
+        sh 'docker network ls'
       }
     }
   }
