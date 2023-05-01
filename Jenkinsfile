@@ -29,13 +29,12 @@ pipeline {
     }
     stage('Test') {
       steps {
-        sh 'docker exec data-pipeline_develop-airflow-webserver-1 bash -c "python3 -m pytest -v || exit 1"'
+        sh 'docker exec data-pipeline_develop-airflow-webserver-1 bash -c "python3 -m pytest -v"'
       }
     }
   }
   post {
     always {
-      sh 'docker compose down --volumes --remove-orphans'
       sh 'docker system prune -a --volumes -f'
       cleanWs()
     }
