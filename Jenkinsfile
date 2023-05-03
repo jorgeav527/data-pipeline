@@ -4,12 +4,12 @@ pipeline {
     buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '5')
   }
   stages {
-    // stage('Checkout files') {
-    //   steps {
-    //     sh 'curl https://roadr-data-lake.us-southeast-1.linodeobjects.com/envfile/.env -o .env'
-    //     sh 'ls -al'
-    //   }
-    // }
+    stage('Checkout files') {
+      steps {
+        sh 'curl https://roadr-data-lake.us-southeast-1.linodeobjects.com/envfile/.env -o .env'
+        sh 'ls -al'
+      }
+    }
     // stage('Prune Docker data') {
     //   steps {
     //     sh 'docker system prune -a --volumes -f'
@@ -40,10 +40,10 @@ pipeline {
       }
     }
   }
-  // post {
-  //   always {
-  //     sh 'docker system prune -a --volumes -f'
-  //     cleanWs()
-  //   }
-  // }
+  post {
+    always {
+      // sh 'docker system prune -a --volumes -f'
+      cleanWs()
+    }
+  }
 }
