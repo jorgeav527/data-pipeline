@@ -33,9 +33,9 @@ default_args = {
 with DAG(
     default_args=default_args,
     dag_id="ETL_develoment_v14",
-    start_date=datetime(2023, 2, 2),
+    start_date=datetime(2023, 4, 2),
     schedule="@daily",  # will be "@daily"
-    catchup=True,
+    catchup=False,
     tags=["rd_studio_api"],
     template_searchpath="bucket",
 ) as dag:
