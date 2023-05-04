@@ -88,6 +88,8 @@ def _fetch_mongo_api_to_json(extracted_path, api_token, users_url, bucket_key_pa
     if response.status_code == 200:
         all_items.extend(response.json())
 
+    print(f"response:: {response}")
+
     # Save the response content to a temporaly file.
     with open(extracted_path, "w") as _file:
         # Write the list of dictionaries to a JSON file.
