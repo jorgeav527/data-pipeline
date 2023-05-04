@@ -1,15 +1,12 @@
 pipeline {
   agent any
-  options {
-    buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '5')
-  }
   stages {
-    stage('Checkout files') {
-      steps {
-        sh 'curl https://roadr-data-lake.us-southeast-1.linodeobjects.com/envfile/.env -o .env'
-        sh 'ls -al'
-      }
-    }
+    // stage('Checkout files') {
+    //   steps {
+    //     sh 'curl https://roadr-data-lake.us-southeast-1.linodeobjects.com/envfile/.env -o .env'
+    //     sh 'ls -al'
+    //   }
+    // }
     // stage('Prune Docker data') {
     //   steps {
     //     sh 'docker system prune -a --volumes -f'
@@ -35,7 +32,7 @@ pipeline {
     stage('Deploy to EC2') {
       steps {
         sshagent(['170.187.152.12']) {
-          sh 'ssh -tt -o StricHostKeyChecking=no root@170.187.152.12 ls'
+          sh 'ls'
         }
       }
     }
