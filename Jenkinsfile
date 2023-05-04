@@ -35,7 +35,7 @@ pipeline {
     stage('Deploy to EC2') {
       steps {
         sshagent(['170.187.152.12']) {
-          sh 'cd /data-pipeline && ls'
+          sh 'ls -al'
         }
       }
     }
