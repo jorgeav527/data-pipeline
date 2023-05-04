@@ -36,6 +36,7 @@ pipeline {
       steps {
         sshagent(['170.187.152.12']) {
           sh 'touch file1.txt'
+          sh 'ls -al'
         }
       }
     }
