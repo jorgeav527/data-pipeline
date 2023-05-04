@@ -35,8 +35,7 @@ pipeline {
     stage('Deploy to EC2') {
       steps {
         sshagent(['170.187.152.12']) {
-          sh 'touch file1.txt'
-          sh 'ls -al'
+          sh 'ssh -tt -o StricHostKeyChecking=no root@170.187.152.12 ls'
         }
       }
     }
