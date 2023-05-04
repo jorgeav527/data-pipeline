@@ -32,11 +32,11 @@ pipeline {
     //     sh 'docker exec data-pipeline_develop-airflow-webserver-1 bash -c "python3 -m pytest -v"'
     //   }
     // }
-    stage('Deploy') {
+    stage('Deploy to EC2') {
       steps {
-        sh '''
-          ssh root@170.187.142.212 "touch text.txt"
-        '''
+        sshagent(['170.187.152.12-linode-airflow']) {
+          sh 'cd /data-pipeline && ls'
+        }
       }
     }
   }
