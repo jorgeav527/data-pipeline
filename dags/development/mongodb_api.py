@@ -101,8 +101,8 @@ def _fetch_mongo_api_to_json(extracted_path, api_token, users_url, bucket_key_pa
         ExtraArgs={"ACL": "public-read"},
     )
 
-    # Delete the local file.
-    os.remove(extracted_path)
+    # # Delete the local file.
+    # os.remove(extracted_path)
 
     print(f"JSON file successfully added to the bucket at ({ds}.json).")
 
