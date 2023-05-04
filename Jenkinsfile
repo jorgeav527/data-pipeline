@@ -33,6 +33,8 @@ pipeline {
       steps {
         sshagent(['170.187.152.12']) {
           sh 'ls'
+          sh 'cat Jenkinsfile'
+          sh 'git branch'
         }
       }
     }
