@@ -31,10 +31,12 @@ pipeline {
     // }
     stage('Deploy to EC2') {
       steps {
-        sshagent(['170.187.152.12']) {
-          sh 'ls'
-          sh 'cat Jenkinsfile'
-          sh 'git branch'
+        sshagent(credentials: ['170.187.152.12']) {
+          sh '''
+            [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh
+            ssh-keyscan -t rsa,dsa 170.187.152.12 >> ~/.ssh/known_hosts
+            ssh root@170.187.152.12
+          '''
         }
       }
     }
