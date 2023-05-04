@@ -32,7 +32,7 @@ pipeline {
     stage('Deploy to EC2') {
       steps {
         sshagent(credentials: ['170.187.152.12']) {
-          sh 'ssh root@170.187.152.12'
+          sh 'ssh -o  StrictHostKeyCheking=no -1 root 170.187.152.12 whoami'
         }
       }
     }
