@@ -212,3 +212,36 @@
 - [TestCoverage](https://martinfowler.com/bliki/TestCoverage.html)
 - [What is apache maven?](https://maven.apache.org/what-is-maven.html)
 - [What is a makefile?](https://linux.die.net/man/1/make)
+
+```bash
+docker run --name jenkins-blueocean --restart=on-failure --detach \
+  --network jenkins --env DOCKER_HOST=tcp://docker:2376 \
+  --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 \
+  --publish 8080:8080 --publish 50000:50000 \
+  --volume jenkins-data:/var/jenkins_home \
+  --volume jenkins-docker-certs:/certs/client:ro \
+  --user "$(id -u):$(id -g)" -v /etc/passwd:/etc/passwd:ro \
+  myjenkins-blueocean:2.387.3-1
+```
+
+pipeline {
+agent any
+
+    stages {
+        stage('Hello') {
+            steps {
+                sshagent(credentials: ['170.187.152.12']) {
+                    sh '''
+                        ssh -o  StrictHostKeyChecking=no -l root 170.187.152.12 <<EOF
+                        ls
+                        cd data-pipeline/
+                        ls
+                        git status
+                        git branch
+                    '''
+                }
+            }
+        }
+    }
+
+}
