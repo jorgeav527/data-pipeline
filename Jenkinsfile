@@ -35,7 +35,7 @@ pipeline {
     stage('Deploy to EC2') {
       steps {
         sshagent(['170.187.152.12']) {
-          sh 'ls -al'
+          sh 'touch file1.txt'
         }
       }
     }
