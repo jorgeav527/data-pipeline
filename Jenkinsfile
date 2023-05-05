@@ -38,7 +38,7 @@ pipeline {
             cd data-pipeline/
             git status
             git branch
-            // git pull origin main
+            git pull origin main
           '''
         }
       }
