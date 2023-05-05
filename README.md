@@ -223,25 +223,3 @@ docker run --name jenkins-blueocean --restart=on-failure --detach \
   --user "$(id -u):$(id -g)" -v /etc/passwd:/etc/passwd:ro \
   myjenkins-blueocean:2.387.3-1
 ```
-
-pipeline {
-agent any
-
-    stages {
-        stage('Hello') {
-            steps {
-                sshagent(credentials: ['170.187.152.12']) {
-                    sh '''
-                        ssh -o  StrictHostKeyChecking=no -l root 170.187.152.12 <<EOF
-                        ls
-                        cd data-pipeline/
-                        ls
-                        git status
-                        git branch
-                    '''
-                }
-            }
-        }
-    }
-
-}
