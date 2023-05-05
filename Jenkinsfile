@@ -49,6 +49,7 @@ pipeline {
   }
   post {
     always {
+      sh 'docker compose down'
       sh 'docker system prune -a --volumes -f'
       emailext attachLog: true, body: 'Build:Test:Deploy', subject: 'Jenkins: "build ${env.BUILD_ID}, branch ${env.GIT_BRANCH}"', to: 'jv@roadr.com'
       cleanWs()
