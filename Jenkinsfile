@@ -36,9 +36,9 @@ pipeline {
             ssh -o  StrictHostKeyChecking=no -l root 170.187.152.12 <<EOF
             whoami
             cd data-pipeline/
-            ls
             git status
             git branch
+            // git pull origin main
           '''
         }
       }
@@ -48,6 +48,9 @@ pipeline {
     always {
       sh 'docker system prune -a --volumes -f'
       cleanWs()
+    }
+    failure {
+      mail to: jv@roadr.com, subject: 'The Pipeline failed :( build ${ env.BUILD_ID }, branch ${ env.GIT_BRANCH }'
     }
   }
 }
