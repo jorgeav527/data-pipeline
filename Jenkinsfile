@@ -30,6 +30,9 @@ pipeline {
       }
     }
     stage('Deploy to EC2') {
+      when {
+        branch 'main'
+      }
       steps {
         sshagent(credentials: ['170.187.152.12']) {
           sh '''
