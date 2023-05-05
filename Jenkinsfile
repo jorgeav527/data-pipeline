@@ -47,10 +47,8 @@ pipeline {
   post {
     always {
       sh 'docker system prune -a --volumes -f'
+      emailext attachLog: true, body: 'Build:Test:Deploy', subject: 'Jenkins: "build ${env.BUILD_ID}, branch ${env.GIT_BRANCH}"', to: 'jv@roadr.com'
       cleanWs()
-    }
-    failure {
-      mail to: jv@roadr.com, subject: 'The Pipeline failed :( build ${ env.BUILD_ID }, branch ${ env.GIT_BRANCH }'
     }
   }
 }
