@@ -223,3 +223,5 @@ docker run --name jenkins-blueocean --restart=on-failure --detach \
   --user "$(id -u):$(id -g)" -v /etc/passwd:/etc/passwd:ro \
   myjenkins-blueocean:2.387.3-1
 ```
+
+## commits done
