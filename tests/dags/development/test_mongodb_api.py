@@ -19,4 +19,4 @@ def test_check_mongodb_api_connection():
     # Test case 2: unsuccessful connection (timeout)
     api_token = "xyz789"
     url = ROADR_API
-    assert _check_mongodb_api_connection(api_token, url)
+    assert not _check_mongodb_api_connection(api_token, url)
