@@ -243,7 +243,7 @@ docker run --name jenkins-blueocean --restart=on-failure --detach \
 
 ### 5. Risks and Technical Debts
 
-- Risk: In Linode services I’m spending in total $12 monthly EC2 airflow, $12 monthly EC2 jenkins workflow, $5 monthly S3 bucket, $5 monthly RDS postgres database, Total expenses $ 34 - $ 40 monthly.
+- Risk: In Linode services I’m spending in total \$12 monthly EC2 airflow, \$12 monthly EC2 jenkins workflow, \$5 monthly S3 bucket, \$5 monthly RDS postgres database, Total expenses \$34 - \$40 monthly.
 - Risk: Too many instance configurations so Ansible and Terraform will be the next move.
 - Risk: Working with github flow is literally more productive and less complicated than working with git flow, but I have no idea what problems the project is experiencing.
 - Risk: Docker compose is an excellent choice for managing projects not only during development but also during production for initial projects is the best solution for environmental issues.
